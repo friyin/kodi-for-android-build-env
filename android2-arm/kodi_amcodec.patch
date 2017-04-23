@@ -1,0 +1,11 @@
+--- a/tools/depends/target/xbmc/Makefile	2017-04-23 20:36:28.611740270 +0000
++++ b/tools/depends/target/xbmc/Makefile	2017-04-23 20:35:32.808557148 +0000
+@@ -10,7 +10,7 @@
+ 
+ # configuration settings
+ CONFIGURE = cp -f $(CONFIG_SUB) $(CONFIG_GUESS) build-aux/ ;\
+-  ./configure --prefix=$(PREFIX) $(DEBUG)
++  ./configure --prefix=$(PREFIX) $(DEBUG) --enable-codec=amcodec
+ 
+ ifeq ($(OS),android)
+ CONFIGURE += --disable-libcec

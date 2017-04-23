@@ -1,0 +1,46 @@
+diff -ur a/amadec/Makefile b/amadec/Makefile
+--- a/amadec/Makefile   2015-11-09 23:30:36.000000000 +0000
++++ b/amadec/Makefile   2017-04-23 19:10:09.789134213 +0000
+@@ -7,7 +7,7 @@
+
+ INSTALL_DIR=${M_PREFIX}/lib
+
+-LDFLAGS += -shared -lpthread -lm -lasound -lrt -ldl -lamavutils
++LDFLAGS += -shared -lm -ldl
+
+ CFLAGS+=-O2 -fPIC
+ CFLAGS+=-I$(shell pwd) -I$(shell pwd)/include -I$(shell pwd)/../amavutils/include -I${PREFIX}/include -I${PREFIX}/usr/include -L${PREFIX}/lib -L${PREFIX}/usr/lib
+diff -ur a/amadec/audio_out/alsa-out.c b/amadec/audio_out/alsa-out.c
+--- a/amadec/audio_out/alsa-out.c  2015-11-09 23:30:36.000000000 +0000
++++ b/amadec/audio_out/alsa-out.c  2017-04-23 18:51:34.649634524 +0000
+@@ -13,7 +13,7 @@
+ #include <fcntl.h>
+ #include <sys/ioctl.h>
+ #include <unistd.h>
+-#include <sys/soundcard.h>
++#include <linux/soundcard.h>
+ //#include <config.h>
+ #include <alsa/asoundlib.h>
+ #include <alsa/pcm.h>
+diff -ur a/amavutils/Makefile b/amavutils/Makefile
+--- a/amavutils/Makefile   2015-11-09 23:30:36.000000000 +0000
++++ b/amavutils/Makefile   2017-04-23 18:50:46.192482831 +0000
+@@ -2,7 +2,7 @@
+
+ TARGET_OBJS=amaudioutils.o amconfigutils.o amdisplayutils.o ammodule.o amsysfsutils.o Amvideoutils.o itemlist.o\
+
+-LDFLAGS += -shared -lm -lrt
++LDFLAGS += -shared -lm
+
+ TARGET_DIR=$(shell pwd)/../../../target
+ STAGING_DIR=$(shell pwd)/../../../staging
+diff -u a/amcodec/Makefile b/amcodec/Makefile 
+--- a/amcodec/Makefile	2015-11-09 23:30:36.000000000 +0000
++++ b/amcodec/Makefile	2017-04-23 20:12:55.309102952 +0000
+@@ -64,5 +64,4 @@
+ 	install  $(INSTALL_FLAGS)	$(TARGET)$(LIB_VERSION)$(LIB_SUB_VERSION)  $(LIB_DIR)
+ 	mkdir -p $(HEADERS_DIR)
+ 	cp	-rf $(SRC)/include/*  $(HEADERS_DIR)/
+-	-rm  $(LIB_DIR)/$(TARGET)
+ 	-ln -s $(TARGET)$(LIB_VERSION)$(LIB_SUB_VERSION)  $(LIB_DIR)/$(TARGET)$(LIB_VERSION)
+
