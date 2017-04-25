@@ -1,5 +1,8 @@
 FROM ubuntu:16.04
 MAINTAINER Daniel Fernandez <dfmartinez@gmail.com>
+# Based on https://github.com/phillipao/kodi-for-android-build-env
+# by (Phillip Oertel <phillipao@gmail.com>)
+#
 # Environment for building Kodi for Android.
 #
 # Installs required packages and Android SDK/NDK. Currently intended more for

@@ -1,5 +1,8 @@
 FROM ubuntu:16.04
 MAINTAINER Daniel Fernandez <dfmartinez@gmail.com>
+# Based on https://github.com/phillipao/kodi-for-android-build-env
+# by (Phillip Oertel <phillipao@gmail.com>)
+#
 # Environment for building Kodi for Android.
 #
 # Installs required packages and Android SDK/NDK. Currently intended more for
@@ -24,7 +27,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     nasm \
     unzip \
     zip \
-    zlib1g-dev
+    zlib1g-dev \
+    libasound2-dev \
+    wget
 
 WORKDIR /opt
 RUN curl -O http://dl.google.com/android/android-sdk_r24.4.1-linux.tgz 
@@ -55,12 +60,29 @@ RUN ./make-standalone-toolchain.sh --ndk-dir=../.. \
       --install-dir=/opt/android-toolchain-arm/android-21 --platform=android-21 \
       --toolchain=arm-linux-androideabi-4.9
 
+WORKDIR /root
+RUN wget https://github.com/codesnake/libamcodec/archive/5e23a81.tar.gz
+RUN tar xvf 5e23a81.tar.gz
+COPY amcodec.patch /root
+WORKDIR libamcodec-5e23a81b706f1748e5054d2cc60be92f84c0fb21
+RUN patch -p1 < /root/amcodec.patch
+RUN cp -va /usr/include/alsa /opt/android-toolchain-arm/android-21/sysroot/usr/include/
+RUN CC=/opt/android-toolchain-arm/android-21/bin/arm-linux-androideabi-gcc SYSROOT_PREFIX=/opt/android-toolchain-arm/android-21/sysroot TARGET_PREFIX=/storage/src/kodi-depends/arm-linux-androideabi-android-21 PREFIX="$SYSROOT_PREFIX/usr" CROSS_PREFIX="$TARGET_PREFIX" make -C amavutils
+RUN cp -va amavutils/*.so /opt/android-toolchain-arm/android-21/sysroot/usr/lib
+RUN CC=/opt/android-toolchain-arm/android-21/bin/arm-linux-androideabi-gcc SYSROOT_PREFIX=/opt/android-toolchain-arm/android-21/sysroot TARGET_PREFIX=/storage/src/kodi-depends/arm-linux-androideabi-android-21 PREFIX="$SYSROOT_PREFIX/usr" CROSS_PREFIX="$TARGET_PREFIX" make -C amadec install
+RUN CC=/opt/android-toolchain-arm/android-21/bin/arm-linux-androideabi-gcc SYSROOT_PREFIX=/opt/android-toolchain-arm/android-21/sysroot TARGET_PREFIX=/storage/src/kodi-depends/arm-linux-androideabi-android-21 PREFIX="$SYSROOT_PREFIX/usr" CROSS_PREFIX="$TARGET_PREFIX" make -C amcodec install
+
+
 # The following steps don't really belong in a Dockerfile, because ideally you don't
 # want data (i.e. the source code) inside a docker container. But I included them here
 # to show how I used it. A more idiomatic docker setup would be to create containers
 # around the configure and make commands, with the source mounted as a volume.
+# ENV KODI_BRANCH "Krypton"
 # WORKDIR /root
-# RUN git clone git://github.com/xbmc/xbmc.git kodi-android
+# RUN git clone -b "${KODI_BRANCH}" --single-branch git://github.com/xbmc/xbmc.git kodi-android
+# COPY kodi_amcodec.patch /root
+# WORKDIR /root/kodi-android
+# RUN patch -p1 < /root/kodi_amcodec.patch
 # WORKDIR /root/kodi-android/tools/depends
 
 # RUN ./bootstrap
@@ -79,6 +101,7 @@ RUN ./make-standalone-toolchain.sh --ndk-dir=../.. \
 # RUN make
 # RUN make -j20 -C target/binary-addons
 
+# COPY kodi_amcodec.patch /root
 # WORKDIR /root/kodi-android
 # RUN make -j20 -C tools/depends/target/xbmc
 
